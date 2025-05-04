@@ -1,0 +1,135 @@
+#include <WiFi.h>
+#include <HTTPClient.h> // Biblioteca para requisições HTTP
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+// Credenciais da rede Wi-Fi
+const char* ssid = "WIFI do usuário";
+const char* password = "SENHA do WIFI";
+
+// Endereço do servidor Python
+const char* serverName = "http://192.168.1.109:5000/sensor";
+
+// Configura cliente NTP para obter data e hora
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", -10800); // Offset para o horário de Brasília (-3 horas)
+
+// Configura o servidor web na porta 80
+WiFiServer server(80);
+
+// Variáveis auxiliares para armazenar o estado atual do relé
+String output19State = "Desligada";
+
+// Define os pinos GPIO
+const int output19 = 19; 
+const int input13 = 13;  
+
+void setup() {
+  Serial.begin(115200);
+
+  // Configura os pinos
+  pinMode(output19, OUTPUT);
+  pinMode(input13, INPUT);
+  digitalWrite(output19, LOW);
+
+  // Conecta ao Wi-Fi
+  Serial.print("Conectando ao Wi-Fi...");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWi-Fi conectado!");
+  Serial.println("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+
+  // Inicia cliente NTP
+  timeClient.begin();
+
+  // Inicia o servidor
+  server.begin();
+}
+
+void loop() {
+  // Atualiza o cliente NTP para capturar data e hora atuais
+  timeClient.update();
+  String dataAtual = timeClient.getFormattedTime().substring(0, 10);
+  String horaAtual = timeClient.getFormattedTime();
+
+  // Lógica do sensor PIR para controle do relé
+  if (digitalRead(input13) == HIGH && output19State != "Ligada") {
+    output19State = "Ligada";
+    digitalWrite(output19, HIGH);
+    Serial.println("Sensor ativado.");
+    sendToServer(output19State);
+  } 
+  else if (digitalRead(input13) == LOW && output19State != "Desligada") {
+    output19State = "Desligada";
+    digitalWrite(output19, LOW);
+    Serial.println("Sensor desativado.");
+    sendToServer(output19State);
+  }
+
+  // Conexão com clientes web (mantido igual)
+  WiFiClient client = server.available();
+  if (client) {
+    String currentLine = "";
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        currentLine += c;
+        if (currentLine.endsWith("\r\n\r\n")) {
+          if (currentLine.indexOf("GET /status") >= 0) {
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/plain");
+            client.println("Connection: close");
+            client.println();
+            client.print(output19State);
+          } else {
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<meta charset=\"UTF-8\">");
+            client.println("<title>ESP32 Web Server</title>");
+            client.println("<style>");
+            client.println("body { font-family: 'Arial', sans-serif; font-weight: bold; font-size: 20px; margin: 0; display: flex; justify-content: top; align-items: center; flex-direction: column; height: 100vh; }");
+            client.println("h1 { margin-bottom: 20px; font-size: 40px; }");
+            client.println("p { font-size: 30px; }");
+            client.println("</style>");
+            client.println("<script>");
+            client.println("function fetchState() {");
+            client.println(" fetch('/status')");
+            client.println(" .then(response => response.text())");
+            client.println(" .then(state => {");
+            client.println(" document.getElementById(\"estado\").innerHTML = `Lâmpada está: ${state}`;");
+            client.println(" });");
+            client.println("}");
+            client.println("setInterval(fetchState, 1000);");
+            client.println("</script>");
+            client.println("</head>");
+            client.println("<body>");
+            client.println("<h1>Monitoramento da Lâmpada</h1>");
+            client.println("<p id=\"estado\">Carregando estado...</p>");
+            client.println("</body>");
+            client.println("</html>");
+          }
+          break;
+        }
+      }
+    }
+    client.stop();
+  }
+}
+
+void sendToServer(String estado) {
+  HTTPClient http;
+  http.begin(serverName);
+  http.addHeader("Content-Type", "application/json");
+
+  String jsonData = "{\"estado\":\"" + estado + "\"}";
+  http.POST(jsonData);
+  http.end();
+}
