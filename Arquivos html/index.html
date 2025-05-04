@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./vars.css">
+    <link rel="stylesheet" href="./style.css">
+    <title>Sistema de Consumo - Sala 1</title>
+
+    <style>
+        a, button, input, select, h1, h2, h3, h4, h5, * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border: none;
+            text-decoration: none;
+            background: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        menu, ol, ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Fundo laranja na página */
+        body {
+            background-color: #FFA882;
+            padding: 20px;
+            text-align: center;
+            font-size: 16px; /* Tamanho de fonte padrão (pode ser removido se o zoom for o foco) */
+            line-height: 1.5;
+            transform-origin: top left; /* Garante que o zoom seja a partir do canto superior esquerdo */
+            transition: transform 0.3s ease-in-out; /* Adiciona uma transição suave para o zoom */
+            position: relative; /* Para posicionar os botões de acessibilidade */
+        }
+
+        /* Estilos para resumo de consumo */
+        .resumo-consumo {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 60px; /* Ajuste para espaço dos botões */
+            text-align: center;
+        }
+
+        .resumo-consumo h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .resumo-consumo p {
+            font-size: 21px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .consumo-energia {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .consumo-energia h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .consumo-energia table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .consumo-energia th, .consumo-energia td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .consumo-energia th {
+            background-color: #62ABD9;
+            color: white;
+        }
+
+        /* Estilos para os botões de acessibilidade */
+        .accessibility-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+        }
+
+        .accessibility-button {
+            padding: 8px 10px;
+            margin-left: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            background-color: #FF7F50; /* Laranja um pouco diferente */
+        }
+
+        .contrast-button {
+            padding: 8px 10px;
+            margin-left: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            background-color: #ddd;
+        }
+
+        .contrast-button.high-contrast {
+            color: #fff;
+            background-color: #000;
+        }
+
+        .high-contrast-mode {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+
+        .high-contrast-mode .resumo-consumo,
+        .high-contrast-mode .consumo-energia {
+            background-color: #333 !important;
+            color: #fff !important;
+            border: 1px solid #fff;
+        }
+
+        .high-contrast-mode .consumo-energia th {
+            background-color: #555 !important;
+            color: #eee !important;
+        }
+
+        .high-contrast-mode .consumo-energia td {
+            border-color: #555 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="accessibility-buttons">
+        <button class="accessibility-button" onclick="changeZoom(0.1)">A+</button>
+        <button class="accessibility-button" onclick="changeZoom(-0.1)">A-</button>
+        <button class="accessibility-button" onclick="resetZoom()">A</button>
+        <button id="contrastButton" class="contrast-button" onclick="toggleContrast()">Contraste</button>
+    </div>
+
+    <img src="image-40.png" alt="Logo EducaMente" style="margin-bottom: 20px;">
+
+    <div class="resumo-consumo">
+        <h2>Resumo do Consumo</h2>
+        <p>Consumo Total: <span id="consumo-total">0</span> kWh</p>
+        <p>Custo Total: R$ <span id="custo-total">0</span></p>
+    </div>
+
+    <div class="consumo-energia">
+        <h2>Consumo de Energia</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ligada</th>
+                    <th>Desligada</th>
+                    <th>Tempo Ligada</th>
+                    <th>Custo (R$)</th>
+                </tr>
+            </thead>
+            <tbody id="dados-tabela">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentScale = 1.0;
+        const bodyElement = document.body;
+        const contrastButton = document.getElementById('contrastButton');
+        let highContrast = false;
+
+        function changeZoom(amount) {
+            currentScale += amount;
+            // Impede que a escala fique muito pequena
+            currentScale = Math.max(0.5, currentScale);
+            bodyElement.style.transform = `scale(${currentScale})`;
+        }
+
+        function resetZoom() {
+            currentScale = 1.0;
+            bodyElement.style.transform = `scale(${currentScale})`;
+        }
+
+        function toggleContrast() {
+            highContrast = !highContrast;
+            if (highContrast) {
+                bodyElement.classList.add('high-contrast-mode');
+                contrastButton.textContent = 'Contraste';
+                contrastButton.classList.add('high-contrast');
+            } else {
+                bodyElement.classList.remove('high-contrast-mode');
+                contrastButton.textContent = 'Contraste';
+                contrastButton.classList.remove('high-contrast');
+            }
+        }
+
+        // Função para buscar dados da tabela sensores
+        function atualizarDados() {
+            fetch("http://localhost:5000/dados")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Dados recebidos:", data);
+
+                    // Atualiza a tabela
+                    const tbody = document.getElementById("dados-tabela");
+                    tbody.innerHTML = ""; // Limpa os dados antigos
+
+                    let consumoTotal = 0;
+                    let custoTotal = 0;
+
+                    data.forEach(row => {
+                        const tr = document.createElement("tr");
+
+                        // Garante que Custo e Tempo_Ligado são números válidos
+                        const custo = parseFloat(row.Custo) || 0;
+                        const tempoLigadoSegundos = parseFloat(row.Tempo_Ligado) || 0;
+
+                        // Formatar Tempo Ligado para HH:MM:SS
+                        const horas = Math.floor(tempoLigadoSegundos / 3600);
+                        const minutos = Math.floor((tempoLigadoSegundos % 3600) / 60);
+                        const segundos = Math.floor(tempoLigadoSegundos % 60);
+
+                        const tempoLigadoFormatado = `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+                        const tempoLigadoHorasParaCalculo = tempoLigadoSegundos / 3600;
+
+                        tr.innerHTML = `
+                            <td>${row.ID}</td>
+                            <td>${row.Ligado}</td>
+                            <td>${row.Desligado}</td>
+                            <td>${tempoLigadoFormatado}</td>
+                            <td>${custo.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+
+                        // Atualiza o resumo do consumo
+                        consumoTotal += tempoLigadoHorasParaCalculo;
+                        custoTotal += custo;
+                    });
+
+                    // Atualiza o resumo do consumo
+                    document.getElementById("consumo-total").textContent = consumoTotal.toFixed(2);
+                    document.getElementById("custo-total").textContent = custoTotal.toFixed(2);
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar dados:", error);
+                    alert("Não foi possível carregar os dados.");
+                });
+        }
+
+        // Atualiza os dados ao carregar a página
+        document.addEventListener("DOMContentLoaded", atualizarDados);
+    </script>
+</body>
+</html>
