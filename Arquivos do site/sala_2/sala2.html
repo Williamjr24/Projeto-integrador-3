@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALA 2</title>
+    <style>
+        body {
+            background-color: #FFA882;
+            margin: 0;
+            padding-top: 50px; /* Ajuste para a altura da faixa */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+            transition: background-color 0.3s ease;
+            font-size: 1em; /* Tamanho de fonte base inicial */
+        }
+
+        .accessibility-bar {
+            background-color: rgba(255, 255, 255, 0.3); /* Faixa mais clara */
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .accessibility-buttons {
+            display: inline-block;
+        }
+
+        .accessibility-button {
+            padding: 8px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Tamanho de fonte relativo */
+            color: white;
+            background-color: #FF7F50;
+            border: none;
+            text-decoration: none;
+        }
+
+        .contrast-button {
+            padding: 8px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Tamanho de fonte relativo */
+            color: #333;
+            background-color: #ddd;
+            border: none;
+            text-decoration: none;
+        }
+
+        .contrast-button.high-contrast {
+            color: #fff;
+            background-color: #333;
+        }
+
+        .container {
+            background-color: transparent;
+            padding: 20px 150px; /* Reduzi o padding superior */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px; /* Adicionei uma largura máxima para controle */
+            width: 100%;
+            box-sizing: border-box; /* Garante que o padding não aumente a largura */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate; /* Permite espaçamento entre as células */
+            border-spacing: 50px 0; /* Espaçamento horizontal entre as colunas */
+        }
+
+        td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .inner-table {
+            width: 100%;
+        }
+
+        .inner-table td {
+            padding: 20px 0; /* Aumentei o padding vertical entre as células */
+        }
+
+        .button-row-2,
+        .button-row-3 {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .clickable-image {
+            display: inline-block;
+        }
+
+        .clickable-image img {
+            display: block;
+            max-width: 100%; /* Garante que a imagem não ultrapasse o container */
+            height: auto;
+        }
+
+        .ambiente-titulo {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 3em; /* Tamanho de fonte relativo */
+            text-align: center;
+            margin-top: 0.2em;
+            margin-bottom: 0.5em;
+        }
+
+        /* Estilos para o modo de alto contraste */
+        .high-contrast-mode {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+
+        .high-contrast-mode .accessibility-bar {
+            background-color: rgba(51, 51, 51, 0.7); /* Faixa de contraste mais escura */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="accessibility-bar">
+        <div class="accessibility-buttons">
+            <button class="accessibility-button" onclick="adjustFontSize(0.2)">A+</button>
+            <button class="accessibility-button" onclick="adjustFontSize(-0.2)">A-</button>
+            <button class="accessibility-button" onclick="resetFontSize()">A</button>
+            <button id="contrastButton" class="contrast-button" onclick="toggleContrast()">Contraste</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <table>
+            <tr>
+                <td>
+                    <img src="image_40.png" alt="logotipo Educamente">
+                </td>
+                <td>
+                    <table class="inner-table">
+                        <tr>
+                            <td style="font-size: 3em;">
+                                SALA 2
+                                <br>
+                                <br>
+                                <img src="image_11.png" alt="Lâmpada">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="button-row-2">
+                                    <a href="#">
+                                        <div class="clickable-image">
+                                            <img src="ligar.png" alt="Ligar">
+                                        </div>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="button-row-3">
+                                    <a href="#">
+                                        <div class="clickable-image">
+                                            <img src="desligar.png" alt="Desligar">
+                                        </div>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="C:\projetos\index.html">
+                                    <div class="clickable-image">
+                                        <img src="voltar.png" alt="Voltar">
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        const bodyElement = document.body;
+        const contrastButton = document.getElementById('contrastButton');
+        let highContrast = false;
+        let currentFontSize = 1; // Tamanho de fonte base
+
+        function adjustFontSize(amount) {
+            currentFontSize += amount;
+            bodyElement.style.fontSize = `${currentFontSize}em`;
+        }
+
+        function resetFontSize() {
+            currentFontSize = 1;
+            bodyElement.style.fontSize = `1em`;
+        }
+
+        function toggleContrast() {
+            highContrast = !highContrast;
+            bodyElement.classList.toggle('high-contrast-mode');
+            contrastButton.classList.toggle('high-contrast');
+            contrastButton.textContent = highContrast ? 'Alto Contraste' : 'Contraste';
+        }
+    </script>
+</body>
+
+</html>
