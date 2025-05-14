@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./vars.css">
+    <link rel="stylesheet" href="./style.css">
+    <title>Sistema de Consumo - Sala 1</title>
+
+    <style>
+        a, button, input, select, h1, h2, h3, h4, h5, * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border: none;
+            text-decoration: none;
+            background: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        menu, ol, ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Fundo laranja na página */
+        body {
+            background-color: #FFA882;
+            padding-top: 50px; /* Ajuste para a altura da faixa de acessibilidade */
+            text-align: center;
+            line-height: 1.5;
+            position: relative; /* Para posicionar a faixa de acessibilidade */
+            transition: background-color 0.3s ease; /* Transição suave para o contraste */
+            font-size: 1em; /* Tamanho de fonte base para zoom */
+        }
+
+        /* Estilos para faixa de acessibilidade */
+        .accessibility-bar {
+            background-color: rgba(255, 255, 255, 0.3); /* Faixa levemente transparente e clara */
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        /* Estilos para os botões de acessibilidade */
+        .accessibility-buttons {
+            display: inline-block;
+        }
+
+        .accessibility-button {
+            padding: 8px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Tamanho de fonte relativo */
+            color: white;
+            background-color: #FF7F50; /* Laranja um pouco diferente */
+            border: none;
+            text-decoration: none;
+        }
+
+        .contrast-button {
+            padding: 8px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Tamanho de fonte relativo */
+            color: #333;
+            background-color: #ddd;
+            border: none;
+            text-decoration: none;
+        }
+
+        .contrast-button.high-contrast {
+            color: #fff;
+            background-color: #333;
+        }
+
+        /* Estilos para resumo de consumo */
+        .resumo-consumo {
+            padding: 20px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 20px; /* Simplifiquei as margens */
+            text-align: center;
+        }
+
+        .resumo-consumo h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .resumo-consumo p {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .consumo-energia {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 20px; /* Simplifiquei as margens */
+        }
+
+        .consumo-energia h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .consumo-energia table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Estilos para as informações da tabela */
+        .consumo-energia th, .consumo-energia td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            font-size: 1.5em; /* Usar unidade relativa para o zoom */
+        }
+
+        .consumo-energia th {
+            background-color: #62ABD9;
+            color: white;
+        }
+
+        /* Estilos para o modo de alto contraste */
+        .high-contrast-mode {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+
+        .high-contrast-mode .resumo-consumo,
+        .high-contrast-mode .consumo-energia {
+            background-color: #333 !important;
+            color: #fff !important;
+            border: 1px solid #fff;
+        }
+
+        .high-contrast-mode .consumo-energia th {
+            background-color: #555 !important;
+            color: #eee !important;
+        }
+
+        .high-contrast-mode .consumo-energia td {
+            border-color: #555 !important;
+        }
+
+        .high-contrast-mode .accessibility-bar {
+            background-color: rgba(51, 51, 51, 0.7); /* Faixa de contraste mais escura */
+        }
+
+        .top-section {
+            width: 100%;
+        }
+
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .top-table td {
+            padding: 10px;
+            vertical-align: middle; /* Alinhar verticalmente o conteúdo */
+        }
+
+        .top-table td:nth-child(2) {
+            text-align: center; /* Centralizar a imagem e o texto */
+        }
+
+        .top-table td:nth-child(3) {
+            text-align: right; /* Alinhar o botão "Voltar" à direita */
+            padding-bottom: 20px; /* Empurrar para o canto inferior */
+        }
+
+        .sala-title {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 3em;
+            margin-top: 5px; /* Ajustar o espaçamento entre a logo e o título */
+        }
+    </style>
+</head>
+<body>
+    <div class="accessibility-bar">
+        <div class="accessibility-buttons">
+            <button class="accessibility-button" onclick="adjustFontSize(0.2)">A+</button>
+            <button class="accessibility-button" onclick="adjustFontSize(-0.2)">A-</button>
+            <button class="accessibility-button" onclick="resetFontSize()">A</button>
+            <button id="contrastButton" class="contrast-button" onclick="toggleContrast()">Contraste</button>
+        </div>
+    </div>
+
+    <div class="top-section">
+        <table class="top-table">
+            <tr>
+                <td></td>
+                <td>
+                    <img src="image_30.png" alt="logotipo Educamente" style="margin-bottom: 5px;">
+                    <div class="sala-title">SALA 1</div>
+                </td>
+                <td style="position: relative;">
+                    <a href="C:\projetos\index.html" style="position: absolute; bottom: 0; right: 20px;">
+                        <img src="voltar.png" alt="voltar">
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="resumo-consumo">
+        <h1>Resumo do Consumo</h1>
+
+        <p>Consumo Total: <span id="consumo-total">0</span> h</p>
+        <p>Custo Total: R$ <span id="custo-total">0</span></p>
+
+    </div>
+
+    <div class="consumo-energia">
+        <h1>Consumo de Energia</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ligada</th>
+                    <th>Desligada</th>
+                    <th>Tempo Ligada</th>
+                    <th>Custo (R$)</th>
+                </tr>
+            </thead>
+            <tbody id="dados-tabela">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const bodyElement = document.body;
+        const contrastButton = document.getElementById('contrastButton');
+        let highContrast = false;
+        let currentFontSize = 1; // Tamanho de fonte base
+
+        function adjustFontSize(amount) {
+            currentFontSize += amount;
+            bodyElement.style.fontSize = `${currentFontSize}em`;
+        }
+
+        function resetFontSize() {
+            currentFontSize = 1;
+            bodyElement.style.fontSize = `1em`;
+        }
+
+        function toggleContrast() {
+            highContrast = !highContrast;
+            if (highContrast) {
+                bodyElement.classList.add('high-contrast-mode');
+                contrastButton.textContent = 'Alto Contraste';
+                contrastButton.classList.add('high-contrast');
+            } else {
+                bodyElement.classList.remove('high-contrast-mode');
+                contrastButton.textContent = 'Contraste';
+                contrastButton.classList.remove('high-contrast');
+            }
+        }
+
+        // Função para buscar dados da tabela sensores
+        function atualizarDados() {
+            fetch("http://localhost:5000/dados")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Dados recebidos:", data);
+
+                    // Atualiza a tabela
+                    const tbody = document.getElementById("dados-tabela");
+                    tbody.innerHTML = ""; // Limpa os dados antigos
+
+                    let consumoTotal = 0;
+                    let custoTotal = 0;
+
+                    data.forEach(row => {
+                        const tr = document.createElement("tr");
+
+                        // Garante que Custo e Tempo_Ligado são números válidos
+                        const custo = parseFloat(row.Custo) || 0;
+                        const tempoLigadoSegundos = parseFloat(row.Tempo_Ligado) || 0;
+
+                        // Formatar Tempo Ligado para HH:MM:SS
+                        const horas = Math.floor(tempoLigadoSegundos / 3600);
+                        const minutos = Math.floor((tempoLigadoSegundos % 3600) / 60);
+                        const segundos = Math.floor(tempoLigadoSegundos % 60);
+
+                        const tempoLigadoFormatado = `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+                        const tempoLigadoHorasParaCalculo = tempoLigadoSegundos / 3600;
+
+                        tr.innerHTML = `
+                            <td>${row.ID}</td>
+                            <td>${row.Ligado}</td>
+                            <td>${row.Desligado}</td>
+                            <td>${tempoLigadoFormatado}</td>
+                            <td>${custo.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+
+                        // Atualiza o resumo do consumo
+                        consumoTotal += tempoLigadoHorasParaCalculo;
+                        custoTotal += custo;
+                    });
+
+                    // Atualiza o resumo do consumo
+                    document.getElementById("consumo-total").textContent = consumoTotal.toFixed(2);
+                    document.getElementById("custo-total").textContent = custoTotal.toFixed(2);
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar dados:", error);
+                    alert("Não foi possível carregar os dados.");
+                });
+        }
+
+        // Atualiza os dados ao carregar a página
+        document.addEventListener("DOMContentLoaded", atualizarDados);
+    </script>
+</body>
+</html>
